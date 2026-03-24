@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -41,6 +43,20 @@ class Loan(models.Model):
     loan_date = models.DateField(auto_now_add=True)
     return_date = models.DateField(null=True, blank=True)
     is_returned = models.BooleanField(default=False)
+    
+    # Add due date filed
+    due_date = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        """
+        Save the model 
+        """
+        # We add due date based on loan_date but we add 14 days 
+        # I used self.pk so that we only save it once when it's being created
+        if not self.due_date and not self.pk:
+            self.due_date = self.loan_date + timedelta(days=14)
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.book.title} loaned to {self.member.user.username}"
